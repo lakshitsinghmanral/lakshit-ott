@@ -1,0 +1,1151 @@
+<!-- ... existing code ... -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LAKSHIT OTT - Stream Movies & TV Shows</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: '#E50914',
+                        darkBg: '#0F0F12',
+                        cardBg: '#18181C',
+                        navBg: '#09090B'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0F0F12;
+            color: #FFFFFF;
+        }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0F0F12;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27272A;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #E50914;
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Responsive Viewport Adjustments for Smart TV & Mobile */
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+        }
+
+        /* TV Focus Highlights */
+        .tv-focusable:focus {
+            outline: 3px solid #E50914 !important;
+            outline-offset: 2px;
+            transform: scale(1.04);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-brand selection:text-white bg-darkBg text-white w-full overflow-x-hidden">
+
+    <!-- Top Navigation Header -->
+    <header class="sticky top-0 z-40 bg-navBg/95 backdrop-blur-md border-b border-gray-800/80 w-full">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16 gap-2 sm:gap-4">
+                
+                <!-- Brand Logo & Main Nav -->
+                <div class="flex items-center gap-4 sm:gap-8">
+                    <a href="#" onclick="filterCategory('all')" class="tv-focusable flex items-center gap-2 text-brand font-extrabold text-xl sm:text-2xl tracking-wider hover:scale-105 transition-transform">
+                        <i class="fa-solid fa-circle-play text-brand text-2xl sm:text-3xl"></i>
+                        <span>LAKSHIT <span class="text-white">OTT</span></span>
+                    </a>
+                    
+                    <div class="hidden md:flex items-center space-x-4 lg:space-x-6 text-sm font-medium text-gray-300">
+                        <button onclick="filterCategory('all')" class="tv-focusable hover:text-white transition-colors">Home</button>
+                        <button onclick="filterCategory('Action')" class="tv-focusable hover:text-white transition-colors">Action</button>
+                        <button onclick="filterCategory('Sci-Fi')" class="tv-focusable hover:text-white transition-colors">Sci-Fi</button>
+                        <button onclick="filterCategory('Drama')" class="tv-focusable hover:text-white transition-colors">Drama</button>
+                        <button onclick="filterCategory('TV Shows')" class="tv-focusable hover:text-white transition-colors">TV Shows</button>
+                    </div>
+                </div>
+
+                <!-- Instant Search Input -->
+                <div class="flex-1 max-w-xs sm:max-w-md relative">
+                    <div class="relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm"></i>
+                        <input id="searchInput" type="text" oninput="handleSearch()" placeholder="Search movies, genres, actors..." class="tv-focusable w-full bg-cardBg border border-gray-800 rounded-full py-2 pl-9 sm:pl-10 pr-9 text-xs sm:text-sm text-white placeholder-gray-500 focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/30 transition-all">
+                        <button id="clearSearchBtn" onclick="clearSearch()" class="hidden absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-xs w-5 h-5 flex items-center justify-center rounded-full hover:bg-gray-800">
+                            <i class="fa-solid fa-xmark"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Nav Profile / VIP -->
+                <div class="flex items-center gap-2 sm:gap-4">
+                    <button onclick="toggleSubscriptionModal()" class="tv-focusable bg-gradient-to-r from-brand via-purple-600 to-indigo-600 text-white text-[11px] sm:text-xs font-bold px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full hover:shadow-lg hover:shadow-brand/40 hover:scale-105 transition-all flex items-center gap-1 border border-white/20">
+                        <i class="fa-solid fa-crown text-yellow-300 animate-pulse"></i> <span class="hidden xs:inline">VIP</span>
+                    </button>
+                    <button onclick="toggleMyListModal()" class="tv-focusable relative text-gray-300 hover:text-white transition-colors p-2 rounded-full hover:bg-gray-800" title="My Watchlist">
+                        <i class="fa-solid fa-bookmark text-base sm:text-lg"></i>
+                        <span id="watchlistBadge" class="hidden absolute -top-1 -right-1 bg-brand text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">0</span>
+                    </button>
+                    <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-brand to-purple-600 flex items-center justify-center font-bold text-[10px] sm:text-xs shadow-md border border-white/20 cursor-pointer">
+                        LO
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-1 pb-16">
+        
+        <!-- Search Results Grid Section (Hidden by Default) -->
+        <section id="searchResultsSection" class="hidden max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+            <div class="flex items-center justify-between mb-6 border-b border-gray-800 pb-4">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-magnifying-glass text-brand"></i>
+                    Search Results for "<span id="searchQueryTitle" class="text-brand"></span>"
+                </h2>
+                <span id="searchCount" class="text-xs font-medium text-gray-400">0 found</span>
+            </div>
+            
+            <div id="searchResultsGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4"></div>
+            
+            <div id="noResults" class="hidden text-center py-16">
+                <i class="fa-solid fa-film text-5xl text-gray-700 mb-4"></i>
+                <h3 class="text-lg font-bold text-gray-300">No movies found</h3>
+                <p class="text-xs text-gray-500 mt-1">Try searching with a different keyword or category.</p>
+            </div>
+        </section>
+
+        <!-- Default Home View Container -->
+        <div id="homeContentView">
+            
+            <!-- Colorful Hero Movie Showcase Banner -->
+            <section class="relative w-full h-[55vh] sm:h-[65vh] min-h-[360px] max-h-[600px] overflow-hidden bg-black mb-6 sm:mb-8">
+                <!-- Background Banner Poster Image -->
+                <img id="heroImage" src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=1600&q=80" alt="Hero Banner" class="absolute inset-0 w-full h-full object-cover opacity-60 scale-105 transition-transform duration-700">
+                
+                <!-- Gradient Vignette Layers -->
+                <div class="absolute inset-0 bg-gradient-to-t from-darkBg via-darkBg/40 to-transparent"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-darkBg via-darkBg/60 to-transparent"></div>
+                
+                <!-- Hero Content Details -->
+                <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex flex-col justify-end pb-8 sm:pb-12 z-10">
+                    <div class="max-w-2xl space-y-2 sm:space-y-4">
+                        <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+                            <span class="bg-brand/90 text-white text-[10px] sm:text-[11px] font-extrabold px-2 py-0.5 rounded tracking-wide uppercase shadow-md">Featured Movie</span>
+                            <span class="bg-purple-900/80 text-purple-200 border border-purple-500/40 text-[10px] sm:text-[11px] font-semibold px-2 py-0.5 rounded">4K ULTRA HD</span>
+                            <span class="text-yellow-400 text-xs font-bold flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded border border-yellow-500/30">
+                                <i class="fa-solid fa-star"></i> 8.9
+                            </span>
+                        </div>
+                        
+                        <h1 id="heroTitle" class="text-2xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight sm:leading-none drop-shadow-lg">
+                            Interstellar Odyssey
+                        </h1>
+                        
+                        <p id="heroDescription" class="text-xs sm:text-base text-gray-300 line-clamp-2 sm:line-clamp-3 leading-relaxed drop-shadow-md">
+                            A crew of explorers travels through a dangerous wormhole in space to ensure humanity's survival on distant worlds. Experience breathtaking space exploration in 8K Dolby Atmos.
+                        </p>
+                        
+                        <div class="flex items-center gap-2 sm:gap-4 pt-2">
+                            <button onclick="openPlayerModal(heroMovieData)" class="tv-focusable bg-brand hover:bg-red-700 text-white text-xs sm:text-sm font-bold px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl shadow-lg shadow-brand/40 flex items-center gap-2 transition-all hover:scale-105">
+                                <i class="fa-solid fa-play text-xs sm:text-base"></i> Watch Now
+                            </button>
+                            <button onclick="openDetailsModal(heroMovieData)" class="tv-focusable bg-gray-800/80 hover:bg-gray-700 backdrop-blur-md text-white text-xs sm:text-sm font-semibold px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl border border-gray-700 flex items-center gap-2 transition-all">
+                                <i class="fa-solid fa-circle-info"></i> Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Categorized Movie Carousels -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+                
+                <!-- Trending Row -->
+                <section>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-fire text-brand"></i> Trending Now
+                        </h3>
+                    </div>
+                    <div id="carouselTrending" class="flex gap-4 overflow-x-auto pb-4 hide-scrollbar scroll-smooth"></div>
+                </section>
+
+                <!-- Action Movies Row -->
+                <section>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-bolt text-yellow-400"></i> Action Thrillers
+                        </h3>
+                    </div>
+                    <div id="carouselAction" class="flex gap-4 overflow-x-auto pb-4 hide-scrollbar scroll-smooth"></div>
+                </section>
+
+                <!-- Sci-Fi Row -->
+                <section>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-rocket text-purple-400"></i> Sci-Fi & Universe
+                        </h3>
+                    </div>
+                    <div id="carouselSciFi" class="flex gap-4 overflow-x-auto pb-4 hide-scrollbar scroll-smooth"></div>
+                </section>
+
+                <!-- TV Shows Row -->
+                <section>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                            <i class="fa-solid fa-tv text-blue-400"></i> Popular TV Shows
+                        </h3>
+                    </div>
+                    <div id="carouselTV" class="flex gap-4 overflow-x-auto pb-4 hide-scrollbar scroll-smooth"></div>
+                </section>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Video Player & Movie Details Modal -->
+    <div id="playerModal" class="fixed inset-0 z-50 hidden bg-black/95 backdrop-blur-lg flex items-center justify-center p-0 sm:p-4 overflow-y-auto w-full h-full">
+        <div id="playerContainer" class="w-full max-w-5xl bg-cardBg border-0 sm:border border-gray-800 rounded-none sm:rounded-2xl overflow-hidden shadow-2xl relative my-auto min-h-screen sm:min-h-0 flex flex-col">
+            
+            <!-- Modal Close Button -->
+            <button onclick="closePlayerModal()" class="tv-focusable absolute top-3 right-3 z-30 bg-black/70 text-gray-300 hover:text-white p-2 rounded-full w-9 h-9 flex items-center justify-center border border-white/10 hover:bg-brand transition-colors">
+                <i class="fa-solid fa-xmark text-base"></i>
+            </button>
+
+            <!-- Video Player Display Container -->
+            <div id="videoViewport" class="relative bg-black flex items-center justify-center group overflow-hidden w-full aspect-video max-h-[70vh]">
+                <video id="mainVideoPlayer" class="w-full h-full object-contain transition-all duration-200" controls crossorigin="anonymous">
+                    <source id="videoSource" src="" type="video/mp4">
+                    <track id="subTrackEn" kind="subtitles" srclang="en" label="English" default>
+                    <track id="subTrackHi" kind="subtitles" srclang="hi" label="Hindi">
+                    Your browser does not support the video tag.
+                </video>
+                
+                <!-- Fallback Poster Display when video isn't directly loaded -->
+                <div id="simulatedVideo" class="relative w-full h-full flex flex-col items-center justify-center bg-gray-950">
+                    <img id="modalVideoPoster" src="" alt="Poster" class="absolute inset-0 w-full h-full object-cover opacity-40">
+                    <div class="relative z-10 text-center p-4">
+                        <button id="playSimBtn" onclick="startMoviePlayback()" class="tv-focusable w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-brand text-white text-xl sm:text-2xl flex items-center justify-center hover:scale-110 shadow-lg shadow-brand/40 transition-transform mb-3 mx-auto border-2 border-white/20">
+                            <i id="playSimIcon" class="fa-solid fa-play ml-1"></i>
+                        </button>
+                        <p id="playerStatusText" class="text-xs sm:text-sm font-semibold text-gray-200">Play Stream (Ad-Free)</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Video Controls Toolbar (Aspect Ratio, Quality, Subtitles, TV & Fullscreen) -->
+            <div class="px-3 sm:px-5 py-3 bg-gray-900/90 border-b border-gray-800 flex flex-wrap items-center justify-between gap-2 sm:gap-4 text-xs">
+                
+                <!-- Aspect Ratio Controls -->
+                <div class="flex items-center gap-1.5 sm:gap-2">
+                    <span class="text-gray-400 font-semibold"><i class="fa-solid fa-expand text-brand mr-1"></i> Aspect:</span>
+                    <select id="aspectRatioSelect" onchange="changeAspectRatio(this.value)" class="tv-focusable bg-gray-800 text-white rounded-lg border border-gray-700 px-2 py-1 text-xs focus:outline-none focus:border-brand cursor-pointer">
+                        <option value="contain">Fit Aspect</option>
+                        <option value="cover">Crop / Fill</option>
+                        <option value="16-9">16:9 Wide</option>
+                        <option value="4-3">4:3 Standard</option>
+                        <option value="21-9">21:9 Cinema</option>
+                        <option value="stretch">Stretch Full</option>
+                    </select>
+                </div>
+
+                <!-- Fullscreen Button -->
+                <button onclick="toggleVideoFullscreen()" class="tv-focusable bg-gray-800 hover:bg-gray-700 text-white px-2.5 py-1 rounded-lg border border-gray-700 flex items-center gap-1 font-semibold text-xs">
+                    <i class="fa-solid fa-expand text-brand"></i> Fullscreen
+                </button>
+
+                <!-- Video Quality Selector -->
+                <div class="flex items-center gap-1.5 sm:gap-2">
+                    <span class="text-gray-400 font-semibold"><i class="fa-solid fa-sliders text-yellow-400 mr-1"></i> Quality:</span>
+                    <select id="qualitySelect" onchange="changeQuality(this.value)" class="tv-focusable bg-gray-800 text-white rounded-lg border border-gray-700 px-2 py-1 text-xs focus:outline-none focus:border-brand cursor-pointer">
+                        <option value="480p">480p SD</option>
+                        <option value="720p">720p HD</option>
+                        <option value="1080p" selected>1080p Full HD</option>
+                        <option value="4K">4K Ultra HD</option>
+                        <option value="8K">8K Ultra HD</option>
+                    </select>
+                </div>
+
+                <!-- Subtitle Selector -->
+                <div class="flex items-center gap-1.5 sm:gap-2">
+                    <span class="text-gray-400 font-semibold"><i class="fa-solid fa-closed-captioning text-purple-400 mr-1"></i> Subtitles:</span>
+                    <select id="subtitleSelect" onchange="changeSubtitles(this.value)" class="tv-focusable bg-gray-800 text-white rounded-lg border border-gray-700 px-2 py-1 text-xs focus:outline-none focus:border-brand cursor-pointer">
+                        <option value="off">Off</option>
+                        <option value="en">English</option>
+                        <option value="hi">Hindi (हिंदी)</option>
+                    </select>
+                </div>
+
+                <!-- Ad-Free Status Badge -->
+                <div class="hidden sm:flex items-center gap-1.5 bg-green-500/10 text-green-400 px-2.5 py-1 rounded-full border border-green-500/30 text-[11px] font-bold">
+                    <i class="fa-solid fa-shield-halved"></i> Ad-Free Active
+                </div>
+            </div>
+
+            <!-- Video Details Meta -->
+            <div class="p-4 sm:p-6 space-y-3 sm:space-y-4 flex-1">
+                <div class="flex flex-wrap items-center justify-between gap-2 sm:gap-4">
+                    <div>
+                        <h2 id="modalPlayerTitle" class="text-lg sm:text-2xl font-black text-white flex items-center gap-2"></h2>
+                        <div class="flex items-center gap-2 sm:gap-3 text-xs text-gray-400 mt-1">
+                            <span id="modalRating" class="text-yellow-400 font-bold flex items-center"></span>
+                            <span>•</span>
+                            <span id="modalYear"></span>
+                            <span>•</span>
+                            <span id="modalGenre" class="bg-gray-800 px-2 py-0.5 rounded text-gray-300 font-medium"></span>
+                        </div>
+                    </div>
+                    
+                    <button id="modalWatchlistBtn" onclick="toggleWatchlistCurrent()" class="tv-focusable bg-gray-800 hover:bg-gray-700 text-white text-xs font-semibold px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl border border-gray-700 flex items-center gap-2 transition-all">
+                        <i class="fa-solid fa-plus"></i> Add to Watchlist
+                    </button>
+                </div>
+
+                <p id="modalDescription" class="text-xs sm:text-sm text-gray-300 leading-relaxed border-t border-gray-800/80 pt-3 sm:pt-4"></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIP Subscription Builder Modal -->
+    <div id="subscriptionModal" class="fixed inset-0 z-50 hidden bg-black/90 backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+        <div class="w-full max-w-4xl bg-cardBg border border-gray-800 rounded-2xl overflow-hidden shadow-2xl my-8">
+            
+            <!-- Modal Header -->
+            <div class="p-6 bg-gradient-to-r from-gray-900 via-darkBg to-gray-900 border-b border-gray-800 flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-black text-white flex items-center gap-2">
+                        <i class="fa-solid fa-crown text-yellow-400"></i> LAKSHIT OTT <span class="text-brand">VIP Custom Plans</span>
+                    </h2>
+                    <p class="text-xs text-gray-400 mt-1">Select multiple resolutions, sound features, ads preference & additional screens.</p>
+                </div>
+                <button onclick="toggleSubscriptionModal()" class="text-gray-400 hover:text-white text-xl p-1 bg-gray-800 rounded-full w-8 h-8 flex items-center justify-center border border-gray-700">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-6">
+                <!-- Preset Buttons -->
+                <div class="grid grid-cols-3 gap-3">
+                    <button onclick="selectPreset('free')" class="p-3 rounded-xl border border-gray-800 bg-gray-900/50 hover:bg-gray-800 text-left transition-all">
+                        <span class="text-xs font-bold text-gray-400 block">Free Tier</span>
+                        <span class="text-base font-extrabold text-white">₹0 / month</span>
+                        <span class="text-[10px] text-gray-500 block mt-0.5">480p SD • With Ads</span>
+                    </button>
+                    <button onclick="selectPreset('hd')" class="p-3 rounded-xl border border-brand/40 bg-brand/10 hover:bg-brand/20 text-left transition-all">
+                        <span class="text-xs font-bold text-brand block">Full HD Plan</span>
+                        <span class="text-base font-extrabold text-white">₹399 / month</span>
+                        <span class="text-[10px] text-gray-400 block mt-0.5">1080p • 5.1 Surround • Ad-Free</span>
+                    </button>
+                    <button onclick="selectPreset('ultra')" class="p-3 rounded-xl border border-yellow-500/40 bg-yellow-500/10 hover:bg-yellow-500/20 text-left transition-all">
+                        <span class="text-xs font-bold text-yellow-400 block">Ultimate 8K VIP</span>
+                        <span class="text-base font-extrabold text-white">₹799 / month</span>
+                        <span class="text-[10px] text-gray-300 block mt-0.5">All Resolutions & Audio Enabled</span>
+                    </button>
+                </div>
+
+                <!-- Custom Options Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- 1. Display Quality (Multi-Select Tick Options) -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-desktop text-brand"></i> Display Qualities (Select Any/All):
+                            </label>
+                            <button onclick="toggleAll('res', true)" class="text-[11px] text-brand hover:underline font-semibold">Select All</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <label class="flex items-center gap-2 p-2.5 rounded-lg border border-gray-800 bg-gray-900 cursor-pointer hover:border-brand">
+                                <input type="checkbox" id="res-480p" onchange="calculateCustomPrice()" class="accent-brand rounded">
+                                <span class="text-gray-300 font-semibold">480p SD (₹0)</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-2.5 rounded-lg border border-gray-800 bg-gray-900 cursor-pointer hover:border-brand">
+                                <input type="checkbox" id="res-720p" checked onchange="calculateCustomPrice()" class="accent-brand rounded">
+                                <span class="text-gray-300 font-semibold">720p HD (+₹199)</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-2.5 rounded-lg border border-gray-800 bg-gray-900 cursor-pointer hover:border-brand">
+                                <input type="checkbox" id="res-1080p" onchange="calculateCustomPrice()" class="accent-brand rounded">
+                                <span class="text-gray-300 font-semibold">1080p FHD (+₹299)</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-2.5 rounded-lg border border-gray-800 bg-gray-900 cursor-pointer hover:border-brand">
+                                <input type="checkbox" id="res-4K" onchange="calculateCustomPrice()" class="accent-brand rounded">
+                                <span class="text-gray-300 font-semibold">4K UHD (+₹499)</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-2.5 rounded-lg border border-gray-800 bg-gray-900 cursor-pointer hover:border-brand col-span-2">
+                                <input type="checkbox" id="res-8K" onchange="calculateCustomPrice()" class="accent-brand rounded">
+                                <span class="text-gray-300 font-semibold">8K Extreme Ultra HD (+₹699)</span>
+                            </label>
+                        </div>
+                        <div class="flex items-center gap-2 pt-1">
+                            <input type="checkbox" id="dolbyVisionToggle" onchange="calculateCustomPrice()" class="accent-brand rounded">
+                            <label for="dolbyVisionToggle" class="text-xs text-gray-300 font-medium">Add Dolby Vision (+₹100)</label>
+                        </div>
+                    </div>
+
+                    <!-- 2. Audio Quality (Multi-Select Tick Options) -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between">
+                            <label class="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-volume-high text-yellow-400"></i> Audio Features (Select Any/All):
+                            </label>
+                            <button onclick="toggleAll('audio', true)" class="text-[11px] text-yellow-400 hover:underline font-semibold">Select All</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <label class="flex items-center gap-2 p-2.5 rounded-lg border border-gray-800 bg-gray-900 cursor-pointer hover:border-brand">
+                                <input type="checkbox" id="audio-Stereo" checked onchange="calculateCustomPrice()" class="accent-brand rounded">
+                                <span class="text-gray-300 font-semibold">Stereo 2.0 (₹0)</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-2.5 rounded-lg border border-gray-800 bg-gray-900 cursor-pointer hover:border-brand">
+                                <input type="checkbox" id="audio-Surround" onchange="calculateCustomPrice()" class="accent-brand rounded">
+                                <span class="text-gray-300 font-semibold">5.1 Surround (+₹99)</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-2.5 rounded-lg border border-gray-800 bg-gray-900 cursor-pointer hover:border-brand">
+                                <input type="checkbox" id="audio-DolbyAtmos" onchange="calculateCustomPrice()" class="accent-brand rounded">
+                                <span class="text-gray-300 font-semibold">Dolby Atmos (+₹199)</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-2.5 rounded-lg border border-gray-800 bg-gray-900 cursor-pointer hover:border-brand">
+                                <input type="checkbox" id="audio-DTS" onchange="calculateCustomPrice()" class="accent-brand rounded">
+                                <span class="text-gray-300 font-semibold">DTS:X Spatial (+₹149)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 3. Ad-Free Switch -->
+                    <div class="space-y-3">
+                        <label class="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+                            <i class="fa-solid fa-rectangle-ad text-purple-400"></i> Commercial Ads Preference:
+                        </label>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <label class="flex items-center gap-2 p-2.5 rounded-lg border border-gray-800 bg-gray-900 cursor-pointer hover:border-brand">
+                                <input type="radio" name="adsOption" id="ads-with" checked onchange="calculateCustomPrice()" class="accent-brand">
+                                <span class="text-gray-300 font-semibold">With Ads (Free)</span>
+                            </label>
+                            <label class="flex items-center gap-2 p-2.5 rounded-lg border border-gray-800 bg-gray-900 cursor-pointer hover:border-brand">
+                                <input type="radio" name="adsOption" id="ads-none" onchange="calculateCustomPrice()" class="accent-brand">
+                                <span class="text-gray-300 font-semibold">100% Ad-Free (+₹99)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 4. Screen Limit (1 free + ₹150 per extra screen) -->
+                    <div class="space-y-3">
+                        <label class="text-xs font-bold text-gray-300 flex items-center justify-between">
+                            <span class="flex items-center gap-1.5"><i class="fa-solid fa-users text-blue-400"></i> Simultaneous Screens:</span>
+                            <span class="text-brand font-bold text-xs">1 Screen included (Extra screen: +₹150 each)</span>
+                        </label>
+                        <div class="grid grid-cols-4 gap-2 text-xs">
+                            <label class="flex items-center justify-center p-2.5 rounded-lg border border-gray-800 bg-gray-900 cursor-pointer hover:border-brand">
+                                <input type="radio" name="screenOption" value="1" checked onchange="calculateCustomPrice()" class="accent-brand mr-1.5">
+                                <span class="text-gray-300 font-semibold">1 Screen</span>
+                            </label>
+                            <label class="flex items-center justify-center p-2.5 rounded-lg border border-gray-800 bg-gray-900 cursor-pointer hover:border-brand">
+                                <input type="radio" name="screenOption" value="2" onchange="calculateCustomPrice()" class="accent-brand mr-1.5">
+                                <span class="text-gray-300 font-semibold">2 (+₹150)</span>
+                            </label>
+                            <label class="flex items-center justify-center p-2.5 rounded-lg border border-gray-800 bg-gray-900 cursor-pointer hover:border-brand">
+                                <input type="radio" name="screenOption" value="4" onchange="calculateCustomPrice()" class="accent-brand mr-1.5">
+                                <span class="text-gray-300 font-semibold">4 (+₹450)</span>
+                            </label>
+                            <label class="flex items-center justify-center p-2.5 rounded-lg border border-gray-800 bg-gray-900 cursor-pointer hover:border-brand">
+                                <input type="radio" name="screenOption" value="6" onchange="calculateCustomPrice()" class="accent-brand mr-1.5">
+                                <span class="text-gray-300 font-semibold">6 (+₹750)</span>
+                            </label>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Price Summary Bar -->
+                <div class="p-4 bg-gray-900 rounded-xl border border-gray-800 flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <span class="text-xs text-gray-400 block">Total Monthly Subscription</span>
+                        <div id="finalPriceDisplay" class="text-3xl font-black text-brand">₹199</div>
+                        <span id="subscriptionSummaryText" class="text-xs text-gray-300 mt-1 block">Selected: 720p HD • Stereo 2.0 • With Ads • 1 Screen</span>
+                    </div>
+
+                    <button onclick="executePayment()" class="bg-gradient-to-r from-brand to-purple-600 hover:opacity-90 text-white font-bold text-sm px-8 py-3.5 rounded-xl shadow-lg shadow-brand/30 transition-all">
+                        Proceed to Pay <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Watchlist Drawer Modal -->
+    <div id="watchlistModal" class="fixed inset-0 z-50 hidden bg-black/80 backdrop-blur-sm flex justify-end">
+        <div class="w-full max-w-md bg-cardBg h-full border-l border-gray-800 p-6 overflow-y-auto flex flex-col">
+            <div class="flex items-center justify-between border-b border-gray-800 pb-4 mb-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-bookmark text-brand"></i> My Watchlist
+                </h3>
+                <button onclick="toggleMyListModal()" class="text-gray-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            
+            <div id="watchlistContent" class="flex-1 space-y-3"></div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-cardBg border-t border-gray-800/60 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-500">
+            <div class="flex items-center gap-2 text-gray-400 font-bold text-base">
+                <i class="fa-solid fa-circle-play text-brand"></i> LAKSHIT OTT
+            </div>
+            <p>&copy; 2026 LAKSHIT OTT Inc. All rights reserved.</p>
+            <div class="flex gap-6">
+                <a href="#" class="hover:text-gray-300">Privacy Policy</a>
+                <a href="#" class="hover:text-gray-300">Terms of Use</a>
+                <a href="#" class="hover:text-gray-300">Help Center</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Application Script -->
+    <script>
+        /* ========================================================================
+           LAKSHIT - MOVIE CONFIGURATION SECTION (EDIT/ADD YOUR MOVIES HERE)
+           
+           INSTRUCTIONS FOR SEARCH:
+           Any title, category, actor, or description added here will instantly be 
+           searchable in the search bar. Typing even partial letters (e.g., "tox", 
+           "tv", "dark", "inter") will show matching movies automatically!
+           ======================================================================== */
+        const movieDatabase = [
+            {
+                id: 1,
+                title: "Interstellar Odyssey",
+                category: "Sci-Fi",
+                year: 2024,
+                rating: 8.9,
+                duration: "2h 45m",
+                quality: "8K", // Resolution Tag (SD, HD, 4K, 8K)
+                poster: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?auto=format&fit=crop&w=600&q=80", // Movie Poster / Thumbnail
+                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4", // Movie Video URL
+                description: "A crew of explorers travels through a dangerous wormhole in space to ensure humanity's survival on distant worlds.",
+                cast: "Matthew C., Anne H.",
+                trending: true
+            },
+            {
+                id: 2,
+                title: "Cyber City 2099",
+                category: "Sci-Fi",
+                year: 2025,
+                rating: 8.5,
+                duration: "2h 10m",
+                quality: "4K",
+                poster: "https://images.unsplash.com/photo-1578632767115-351597cf2477?auto=format&fit=crop&w=600&q=80",
+                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                description: "In a neon-drenched metropolis, a rogue hacker uncovers a dark corporate conspiracy that threatens human autonomy.",
+                cast: "Keanu R., Ana D.",
+                trending: true
+            },
+            {
+                id: 3,
+                title: "Toxic Reckoning",
+                category: "Action",
+                year: 2025,
+                rating: 9.0,
+                duration: "2h 15m",
+                quality: "4K",
+                poster: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=600&q=80",
+                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+                description: "A high-stakes thriller where dangerous secrets collide with high-octane action.",
+                cast: "Yash, Kareena K.",
+                trending: true
+            },
+            {
+                id: 4,
+                title: "Shadow Protocol",
+                category: "Action",
+                year: 2023,
+                rating: 7.9,
+                duration: "1h 55m",
+                quality: "HD",
+                poster: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=600&q=80",
+                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+                description: "An elite undercover operative must race against time to stop an international syndicate from activating an orbital weapon.",
+                cast: "Tom C., Rebecca F.",
+                trending: false
+            },
+            {
+                id: 5,
+                title: "The Silent Forest",
+                category: "Drama",
+                year: 2022,
+                rating: 8.2,
+                duration: "2h 05m",
+                quality: "SD",
+                poster: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?auto=format&fit=crop&w=600&q=80",
+                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4",
+                description: "A haunting family drama centered on secret legacies buried deep within a secluded Scandinavian woodland.",
+                cast: "Mads M., Alicia V.",
+                trending: false
+            },
+            {
+                id: 6,
+                title: "Neon Horizon",
+                category: "Sci-Fi",
+                year: 2024,
+                rating: 9.1,
+                duration: "2h 30m",
+                quality: "4K",
+                poster: "https://images.unsplash.com/photo-1514539079130-25950c84af65?auto=format&fit=crop&w=600&q=80",
+                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+                description: "A space pilot navigates the dangerous edge of deep space in search of a legendary mythical planet.",
+                cast: "Ryan G., Zoe S.",
+                trending: true
+            },
+            {
+                id: 7,
+                title: "Speed Reckoning",
+                category: "Action",
+                year: 2023,
+                rating: 7.4,
+                duration: "1h 48m",
+                quality: "HD",
+                poster: "https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?auto=format&fit=crop&w=600&q=80",
+                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4",
+                description: "High-octane underground street racers pull off daring heists across major European capitals.",
+                cast: "Vin D., Paul W.",
+                trending: false
+            },
+            {
+                id: 8,
+                title: "Crown of Empires",
+                category: "TV Shows",
+                year: 2024,
+                rating: 9.3,
+                duration: "Season 3",
+                quality: "4K",
+                poster: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?auto=format&fit=crop&w=600&q=80",
+                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4",
+                description: "Rival royal dynasties engage in ruthless political warfare and betrayal for total control of the continent.",
+                cast: "Emilia C., Kit H.",
+                trending: true
+            },
+            {
+                id: 9,
+                title: "Dark Matter Chronicles",
+                category: "TV Shows",
+                year: 2025,
+                rating: 8.7,
+                duration: "Season 1",
+                quality: "8K",
+                poster: "https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?auto=format&fit=crop&w=600&q=80",
+                videoUrl: "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4",
+                description: "A physicist is transported into an alternate version of his life and must journey through parallel realities.",
+                cast: "Joel E., Jennifer C.",
+                trending: false
+            }
+        ];
+
+        let currentMovieInModal = null;
+        let isPlaying = false;
+        let playInterval = null;
+        let progress = 0;
+        let watchlist = [];
+
+        const heroMovieData = movieDatabase[0];
+
+        // Working Aspect Ratio Controller (Applies directly to Video Container & Video Element)
+        function changeAspectRatio(mode) {
+            const video = document.getElementById('mainVideoPlayer');
+            const simVideo = document.getElementById('simulatedVideo');
+            const viewport = document.getElementById('videoViewport');
+
+            if (!video || !viewport) return;
+
+            // Reset custom inline styles first
+            video.style.objectFit = 'contain';
+            video.style.width = '100%';
+            video.style.height = '100%';
+            viewport.style.aspectRatio = '16 / 9';
+
+            if (mode === 'contain') {
+                video.style.objectFit = 'contain';
+            } else if (mode === 'cover') {
+                video.style.objectFit = 'cover';
+            } else if (mode === '16-9') {
+                viewport.style.aspectRatio = '16 / 9';
+                video.style.objectFit = 'fill';
+            } else if (mode === '4-3') {
+                viewport.style.aspectRatio = '4 / 3';
+                video.style.objectFit = 'fill';
+            } else if (mode === '21-9') {
+                viewport.style.aspectRatio = '21 / 9';
+                video.style.objectFit = 'fill';
+            } else if (mode === 'stretch') {
+                video.style.objectFit = 'fill';
+                video.style.width = '100%';
+                video.style.height = '100%';
+            }
+        }
+
+        // Fullscreen Toggle for TV / PC / Mobile
+        function toggleVideoFullscreen() {
+            const viewport = document.getElementById('videoViewport');
+            if (!viewport) return;
+
+            if (!document.fullscreenElement) {
+                if (viewport.requestFullscreen) {
+                    viewport.requestFullscreen();
+                } else if (viewport.webkitRequestFullscreen) {
+                    viewport.webkitRequestFullscreen();
+                } else if (viewport.msRequestFullscreen) {
+                    viewport.msRequestFullscreen();
+                }
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        function changeQuality(quality) {
+            showToast(`Stream Quality switched to ${quality}`);
+        }
+
+        function changeSubtitles(lang) {
+            const video = document.getElementById('mainVideoPlayer');
+            if (!video || !video.textTracks) return;
+
+            for (let i = 0; i < video.textTracks.length; i++) {
+                video.textTracks[i].mode = 'disabled';
+            }
+
+            if (lang === 'en' && video.textTracks[0]) {
+                video.textTracks[0].mode = 'showing';
+            } else if (lang === 'hi' && video.textTracks[1]) {
+                video.textTracks[1].mode = 'showing';
+            }
+        }
+
+        // Showing "Coming Soon" toast when trying to play movie or execute payment
+        function showComingSoon(itemTitle = "This content") {
+            showToast(`🚀 COMING SOON: "${itemTitle}" will be available for streaming shortly!`);
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'fixed bottom-6 right-6 bg-gradient-to-r from-brand to-purple-600 text-white text-xs font-extrabold px-5 py-3 rounded-xl shadow-2xl z-50 border border-white/20 animate-bounce';
+            toast.innerHTML = `<i class="fa-solid fa-clock mr-1.5"></i> ${message}`;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3500);
+        }
+
+        function startMoviePlayback() {
+            if (currentMovieInModal) {
+                showComingSoon(currentMovieInModal.title);
+            } else {
+                showComingSoon("Movie Playback");
+            }
+        }
+
+        function openPlayerModal(movie) {
+            currentMovieInModal = movie;
+            document.getElementById('modalPlayerTitle').innerHTML = `<i class="fa-solid fa-play text-brand text-sm"></i> ${movie.title}`;
+            document.getElementById('modalVideoPoster').src = movie.poster;
+            document.getElementById('modalRating').innerHTML = `<i class="fa-solid fa-star mr-1"></i>${movie.rating}`;
+            document.getElementById('modalYear').innerText = movie.year;
+            document.getElementById('modalGenre').innerText = `${movie.category} • ${movie.quality || 'HD'}`;
+            document.getElementById('modalDescription').innerText = movie.description;
+
+            const video = document.getElementById('mainVideoPlayer');
+            const simVideo = document.getElementById('simulatedVideo');
+            
+            if (video) {
+                video.pause();
+                video.classList.add('hidden');
+            }
+            if (simVideo) {
+                simVideo.classList.remove('hidden');
+            }
+
+            document.getElementById('aspectRatioSelect').value = 'contain';
+            changeAspectRatio('contain');
+
+            updateModalWatchlistBtnStatus();
+            resetPlayer();
+
+            document.getElementById('playerModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        // Smart TV Remote Controller Navigation (Arrow keys and Enter button)
+        let focusableIndex = 0;
+        document.addEventListener('keydown', function(e) {
+            const focusables = document.querySelectorAll('.tv-focusable, input, button, select');
+            if (!focusables.length) return;
+
+            if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+                focusableIndex = (focusableIndex + 1) % focusables.length;
+                focusables[focusableIndex].focus();
+            } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+                focusableIndex = (focusableIndex - 1 + focusables.length) % focusables.length;
+                focusables[focusableIndex].focus();
+            }
+        });
+
+        function closePlayerModal() {
+            const video = document.getElementById('mainVideoPlayer');
+            if (video) video.pause();
+            pauseSimulatedVideo();
+            document.getElementById('playerModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function toggleSubscriptionModal() {
+            const modal = document.getElementById('subscriptionModal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+                calculateCustomPrice();
+            } else {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        function toggleAll(type, value) {
+            if (type === 'res') {
+                ['res-480p', 'res-720p', 'res-1080p', 'res-4K', 'res-8K'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.checked = value;
+                });
+            } else if (type === 'audio') {
+                ['audio-Stereo', 'audio-Surround', 'audio-DolbyAtmos', 'audio-DTS'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.checked = value;
+                });
+            }
+            calculateCustomPrice();
+        }
+
+        function calculateCustomPrice() {
+            let total = 0;
+            let selectedResolutions = [];
+            let selectedAudio = [];
+
+            // Resolutions
+            if (document.getElementById('res-480p')?.checked) { selectedResolutions.push('480p'); }
+            if (document.getElementById('res-720p')?.checked) { total += 199; selectedResolutions.push('720p'); }
+            if (document.getElementById('res-1080p')?.checked) { total += 299; selectedResolutions.push('1080p'); }
+            if (document.getElementById('res-4K')?.checked) { total += 499; selectedResolutions.push('4K'); }
+            if (document.getElementById('res-8K')?.checked) { total += 699; selectedResolutions.push('8K'); }
+
+            const dolbyVision = document.getElementById('dolbyVisionToggle')?.checked;
+            if (dolbyVision) {
+                total += 100;
+                selectedResolutions.push('Dolby Vision');
+            }
+
+            // Audio
+            if (document.getElementById('audio-Stereo')?.checked) { selectedAudio.push('Stereo 2.0'); }
+            if (document.getElementById('audio-Surround')?.checked) { total += 99; selectedAudio.push('5.1 Surround'); }
+            if (document.getElementById('audio-DolbyAtmos')?.checked) { total += 199; selectedAudio.push('Dolby Atmos'); }
+            if (document.getElementById('audio-DTS')?.checked) { total += 149; selectedAudio.push('DTS:X'); }
+
+            // Ads
+            const adFree = document.getElementById('ads-none')?.checked;
+            if (adFree) {
+                total += 99;
+            }
+            const adsText = adFree ? 'Ad-Free Premium' : 'With Ads';
+
+            // Screens (1 included + ₹150 for each extra screen)
+            const selectedScreenRadio = document.querySelector('input[name="screenOption"]:checked');
+            const screenCount = selectedScreenRadio ? parseInt(selectedScreenRadio.value, 10) : 1;
+            const extraScreens = screenCount - 1;
+            if (extraScreens > 0) {
+                total += extraScreens * 150;
+            }
+
+            const priceElem = document.getElementById('finalPriceDisplay');
+            if (priceElem) {
+                priceElem.innerText = `₹${total.toLocaleString('en-IN')}`;
+            }
+
+            const summaryElem = document.getElementById('subscriptionSummaryText');
+            if (summaryElem) {
+                const resStr = selectedResolutions.length > 0 ? selectedResolutions.join(', ') : 'None';
+                const audioStr = selectedAudio.length > 0 ? selectedAudio.join(', ') : 'None';
+                summaryElem.innerText = 
+                    `Selected: Res (${resStr}) • Audio (${audioStr}) • ${adsText} • ${screenCount} Screen(s)`;
+            }
+        }
+
+        function selectPreset(presetType) {
+            if (presetType === 'free') {
+                toggleAll('res', false);
+                toggleAll('audio', false);
+                document.getElementById('res-480p').checked = true;
+                document.getElementById('audio-Stereo').checked = true;
+                document.getElementById('ads-with').checked = true;
+                document.getElementById('dolbyVisionToggle').checked = false;
+                document.querySelector('input[name="screenOption"][value="1"]').checked = true;
+            } else if (presetType === 'hd') {
+                toggleAll('res', false);
+                toggleAll('audio', false);
+                document.getElementById('res-1080p').checked = true;
+                document.getElementById('audio-Surround').checked = true;
+                document.getElementById('ads-none').checked = true;
+                document.getElementById('dolbyVisionToggle').checked = false;
+                document.querySelector('input[name="screenOption"][value="2"]').checked = true;
+            } else if (presetType === 'ultra') {
+                toggleAll('res', true);
+                toggleAll('audio', true);
+                document.getElementById('ads-none').checked = true;
+                document.getElementById('dolbyVisionToggle').checked = true;
+                document.querySelector('input[name="screenOption"][value="4"]').checked = true;
+            }
+            calculateCustomPrice();
+        }
+
+        function executePayment() {
+            showComingSoon("Payment Gateway / Checkout System");
+        }
+
+        /* Helper & Watchlist Functions */
+        function openPlayerModalById(id) {
+            const movie = movieDatabase.find(m => m.id === id);
+            if (movie) openPlayerModal(movie);
+        }
+
+        function openDetailsModal(movie) {
+            openPlayerModal(movie);
+        }
+
+        function resetPlayer() {
+            isPlaying = false;
+            progress = 0;
+            if (playInterval) clearInterval(playInterval);
+            const playSimIcon = document.getElementById('playSimIcon');
+            if (playSimIcon) playSimIcon.className = 'fa-solid fa-play ml-1';
+        }
+
+        function pauseSimulatedVideo() {
+            isPlaying = false;
+            if (playInterval) clearInterval(playInterval);
+        }
+
+        function clearSearch() {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = '';
+            document.getElementById('clearSearchBtn')?.classList.add('hidden');
+            document.getElementById('searchResultsSection')?.classList.add('hidden');
+            document.getElementById('homeContentView')?.classList.remove('hidden');
+        }
+
+        function filterCategory(category) {
+            clearSearch();
+            if (category === 'all') {
+                document.getElementById('homeContentView')?.classList.remove('hidden');
+                return;
+            }
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.value = category;
+                handleSearch();
+            }
+        }
+
+        function updateWatchlistBadge() {
+            const badge = document.getElementById('watchlistBadge');
+            if (!badge) return;
+            if (watchlist.length > 0) {
+                badge.innerText = watchlist.length;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function toggleWatchlistCurrent() {
+            if (!currentMovieInModal) return;
+            const index = watchlist.findIndex(m => m.id === currentMovieInModal.id);
+            if (index === -1) {
+                watchlist.push(currentMovieInModal);
+                showToast(`Added "${currentMovieInModal.title}" to Watchlist`);
+            } else {
+                watchlist.splice(index, 1);
+                showToast(`Removed "${currentMovieInModal.title}" from Watchlist`);
+            }
+            updateModalWatchlistBtnStatus();
+            updateWatchlistBadge();
+        }
+
+        function updateModalWatchlistBtnStatus() {
+            const btn = document.getElementById('modalWatchlistBtn');
+            if (!btn || !currentMovieInModal) return;
+            const exists = watchlist.some(m => m.id === currentMovieInModal.id);
+            if (exists) {
+                btn.innerHTML = `<i class="fa-solid fa-check text-green-400"></i> In Watchlist`;
+                btn.classList.add('border-green-500/50');
+            } else {
+                btn.innerHTML = `<i class="fa-solid fa-plus"></i> Add to Watchlist`;
+                btn.classList.remove('border-green-500/50');
+            }
+        }
+
+        function toggleMyListModal() {
+            const modal = document.getElementById('watchlistModal');
+            if (!modal) return;
+            if (modal.classList.contains('hidden')) {
+                renderWatchlistContent();
+                modal.classList.remove('hidden');
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function renderWatchlistContent() {
+            const container = document.getElementById('watchlistContent');
+            if (!container) return;
+            if (watchlist.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-12 text-gray-500">
+                        <i class="fa-solid fa-bookmark text-4xl mb-3"></i>
+                        <p class="text-xs">Your watchlist is empty.</p>
+                    </div>
+                `;
+                return;
+            }
+            container.innerHTML = watchlist.map(movie => `
+                <div class="flex items-center justify-between p-2.5 bg-gray-900 rounded-xl border border-gray-800">
+                    <div class="flex items-center gap-3">
+                        <img src="${movie.poster}" class="w-12 h-16 object-cover rounded-lg">
+                        <div>
+                            <h5 class="text-xs font-bold text-white line-clamp-1">${movie.title}</h5>
+                            <span class="text-[10px] text-gray-400">${movie.category} • ${movie.year}</span>
+                        </div>
+                    </div>
+                    <button onclick="openPlayerModalById(${movie.id}); toggleMyListModal();" class="text-brand hover:text-white p-2 text-xs">
+                        <i class="fa-solid fa-play"></i>
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        window.onload = function () {
+            renderCarousels();
+            updateWatchlistBadge();
+            calculateCustomPrice();
+        };
+
+        function createMovieCard(movie) {
+            return `
+                <div class="tv-focusable flex-shrink-0 w-36 sm:w-44 bg-cardBg rounded-xl overflow-hidden border border-gray-800/80 hover:border-brand hover:scale-105 transition-all duration-300 cursor-pointer group shadow-lg" onclick="openPlayerModalById(${movie.id})">
+                    <div class="relative aspect-[2/3] overflow-hidden bg-gray-900">
+                        <img src="${movie.poster}" alt="${movie.title}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-darkBg via-transparent to-transparent opacity-80"></div>
+                        <span class="absolute top-2 left-2 bg-black/70 backdrop-blur-md text-yellow-400 text-[10px] font-bold px-1.5 py-0.5 rounded border border-yellow-500/30 flex items-center gap-1">
+                            <i class="fa-solid fa-star"></i> ${movie.rating}
+                        </span>
+                        <span class="absolute top-2 right-2 bg-brand/90 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded uppercase">
+                            ${movie.quality || 'HD'}
+                        </span>
+                        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40">
+                            <div class="w-10 h-10 rounded-full bg-brand text-white flex items-center justify-center shadow-lg shadow-brand/50 scale-90 group-hover:scale-100 transition-transform">
+                                <i class="fa-solid fa-play ml-0.5"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-2.5 space-y-1">
+                        <h4 class="text-xs font-bold text-white truncate group-hover:text-brand transition-colors">${movie.title}</h4>
+                        <div class="flex items-center justify-between text-[10px] text-gray-400">
+                            <span>${movie.category}</span>
+                            <span>${movie.year}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderCarousels() {
+            const trending = movieDatabase.filter(m => m.trending);
+            const action = movieDatabase.filter(m => m.category === 'Action');
+            const scifi = movieDatabase.filter(m => m.category === 'Sci-Fi');
+            const tv = movieDatabase.filter(m => m.category === 'TV Shows');
+
+            const trendingContainer = document.getElementById('carouselTrending');
+            const actionContainer = document.getElementById('carouselAction');
+            const scifiContainer = document.getElementById('carouselSciFi');
+            const tvContainer = document.getElementById('carouselTV');
+
+            if (trendingContainer) trendingContainer.innerHTML = trending.map(createMovieCard).join('');
+            if (actionContainer) actionContainer.innerHTML = action.map(createMovieCard).join('');
+            if (scifiContainer) scifiContainer.innerHTML = scifi.map(createMovieCard).join('');
+            if (tvContainer) tvContainer.innerHTML = tv.map(createMovieCard).join('');
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('searchInput')?.value.trim().toLowerCase();
+            const clearBtn = document.getElementById('clearSearchBtn');
+            const searchSection = document.getElementById('searchResultsSection');
+            const homeView = document.getElementById('homeContentView');
+            const grid = document.getElementById('searchResultsGrid');
+            const noResults = document.getElementById('noResults');
+            const queryTitle = document.getElementById('searchQueryTitle');
+            const countText = document.getElementById('searchCount');
+
+            if (!query) {
+                clearSearch();
+                return;
+            }
+
+            if (clearBtn) clearBtn.classList.remove('hidden');
+            if (homeView) homeView.classList.add('hidden');
+            if (searchSection) searchSection.classList.remove('hidden');
+            if (queryTitle) queryTitle.innerText = query;
+
+            const filtered = movieDatabase.filter(m => 
+                m.title.toLowerCase().includes(query) ||
+                m.category.toLowerCase().includes(query) ||
+                m.description.toLowerCase().includes(query) ||
+                (m.cast && m.cast.toLowerCase().includes(query)) ||
+                (m.quality && m.quality.toLowerCase().includes(query))
+            );
+
+            if (countText) countText.innerText = `${filtered.length} found`;
+
+            if (filtered.length === 0) {
+                if (grid) grid.innerHTML = '';
+                if (noResults) noResults.classList.remove('hidden');
+            } else {
+                if (noResults) noResults.classList.add('hidden');
+                if (grid) grid.innerHTML = filtered.map(createMovieCard).join('');
+            }
+        }
+    </script>
+</body>
+</html>
